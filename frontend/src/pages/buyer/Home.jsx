@@ -3,16 +3,30 @@ import { motion } from 'framer-motion';
 import { CATEGORIES } from '../../data/mockData'; // Keep categories mock for now
 import { ProductCard } from '../../components/ProductCard';
 import { useProductStore } from '../../store/useProductStore';
+import { AllCategoriesModal } from '../../components/AllCategoriesModal';
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export const Home = () => {
     const { products, fetchProducts, isLoading } = useProductStore();
+    const [showAllCategories, setShowAllCategories] = useState(false);
+    const [showAllProducts, setShowAllProducts] = useState(false);
 
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
 
+    const displayedProducts = showAllProducts ? products : products.slice(0, 12);
+
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="min-h-screen bg-gray-50 pb-20 relative">
+            {createPortal(
+                <AllCategoriesModal
+                    isOpen={showAllCategories}
+                    onClose={() => setShowAllCategories(false)}
+                />,
+                document.body
+            )}
             {/* Banner Section */}
             <section className="relative h-64 md:h-80 rounded-2xl overflow-hidden bg-gradient-to-br from-[#0C831F] to-[#096a18] shadow-lg mx-auto max-w-7xl mt-6">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
@@ -52,10 +66,15 @@ export const Home = () => {
             </section>
 
             {/* Categories Grid */}
-            <section>
+            <section className="mt-12">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-bold text-gray-900">Shop by Category</h2>
-                    <button className="text-sm text-primary font-bold">See All</button>
+                    <button
+                        onClick={() => setShowAllCategories(true)}
+                        className="text-sm text-primary font-bold hover:underline"
+                    >
+                        See All
+                    </button>
                 </div>
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
                     {CATEGORIES.map((cat) => (
@@ -72,10 +91,9 @@ export const Home = () => {
             </section>
 
             {/* Popular Products */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+            <section className="mt-12">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-900">Popular Near You</h2>
-                    <button className="text-primary font-bold text-sm hover:underline">View All</button>
                 </div>
 
                 {isLoading ? (
@@ -88,11 +106,20 @@ export const Home = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                        {products.map((product) => (
+                        {displayedProducts.map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
                 )}
+
+                <div className="flex justify-end mt-6">
+                    <button
+                        onClick={() => setShowAllProducts(!showAllProducts)}
+                        className="text-primary font-bold text-sm hover:underline flex items-center gap-1"
+                    >
+                        {showAllProducts ? 'Show Less' : 'View All'}
+                    </button>
+                </div>
             </section>
         </div>
     );

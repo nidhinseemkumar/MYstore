@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { ShoppingCart, Search, User, MapPin, LogIn, Package, X } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useCartStore } from '../store/useCartStore';
@@ -141,9 +142,32 @@ export const Navbar = () => {
         setShowLogoutConfirm(false);
     };
 
+    const [isVisible, setIsVisible] = useState(true);
+    const [lastScrollY, setLastScrollY] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+
+            if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                setIsVisible(false);
+            } else {
+                setIsVisible(true);
+            }
+
+            setLastScrollY(currentScrollY);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [lastScrollY]);
+
     return (
-        <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav
+            className={`fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 bg-white/90 backdrop-blur-md shadow-2xl rounded-2xl border border-gray-100/50 transition-all duration-300 ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-[200%] opacity-0'
+                }`}
+        >
+            <div className="px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo & Location */}
                     <div className="flex items-center gap-4 md:gap-8">
@@ -240,107 +264,113 @@ export const Navbar = () => {
 
             {/* Logout Confirmation Modal */}
             {/* Logout Confirmation Modal */}
-            <AnimatePresence>
-                {showLogoutConfirm && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-                        onClick={() => setShowLogoutConfirm(false)}
-                    >
+            {createPortal(
+                <AnimatePresence>
+                    {showLogoutConfirm && (
                         <motion.div
-                            initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                            transition={{ type: "spring", duration: 0.3 }}
-                            className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6"
-                            onClick={(e) => e.stopPropagation()}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                            onClick={() => setShowLogoutConfirm(false)}
                         >
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
-                            <p className="text-gray-500 mb-6 text-sm">
-                                Are you sure you want to log out of your account?
-                            </p>
-                            <div className="flex gap-3 justify-end">
-                                <button
-                                    onClick={() => setShowLogoutConfirm(false)}
-                                    className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors text-sm"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleLogout}
-                                    className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm text-sm"
-                                >
-                                    Logout
-                                </button>
-                            </div>
+                            <motion.div
+                                initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                                transition={{ type: "spring", duration: 0.3 }}
+                                className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
+                                <p className="text-gray-500 mb-6 text-sm">
+                                    Are you sure you want to log out of your account?
+                                </p>
+                                <div className="flex gap-3 justify-end">
+                                    <button
+                                        onClick={() => setShowLogoutConfirm(false)}
+                                        className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors text-sm"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm text-sm"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            </motion.div>
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
 
             {/* Location Edit Modal */}
-            <AnimatePresence>
-                {showLocationModal && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-                        onClick={() => setShowLocationModal(false)}
-                    >
+            {createPortal(
+                <AnimatePresence>
+                    {showLocationModal && (
                         <motion.div
-                            initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                            transition={{ type: "spring", duration: 0.3 }}
-                            className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6"
-                            onClick={(e) => e.stopPropagation()}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                            onClick={() => setShowLocationModal(false)}
                         >
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Edit Location</h3>
+                            <motion.div
+                                initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                                transition={{ type: "spring", duration: 0.3 }}
+                                className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <h3 className="text-lg font-bold text-gray-900 mb-4">Edit Location</h3>
 
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Address Label / Area</label>
-                                    <input
-                                        type="text"
-                                        value={editForm.address}
-                                        onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-                                        placeholder="e.g. Home, Office, Koramangala"
-                                    />
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Address Label / Area</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.address}
+                                            onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                                            placeholder="e.g. Home, Office, Koramangala"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.city}
+                                            onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                                            placeholder="e.g. Bangalore"
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                                    <input
-                                        type="text"
-                                        value={editForm.city}
-                                        onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-                                        placeholder="e.g. Bangalore"
-                                    />
-                                </div>
-                            </div>
 
-                            <div className="flex gap-3 justify-end mt-6">
-                                <button
-                                    onClick={() => setShowLocationModal(false)}
-                                    className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors text-sm"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleSaveLocation}
-                                    className="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-sm text-sm"
-                                >
-                                    Save Location
-                                </button>
-                            </div>
+                                <div className="flex gap-3 justify-end mt-6">
+                                    <button
+                                        onClick={() => setShowLocationModal(false)}
+                                        className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors text-sm"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleSaveLocation}
+                                        className="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-sm text-sm"
+                                    >
+                                        Save Location
+                                    </button>
+                                </div>
+                            </motion.div>
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </nav>
     );
 };
