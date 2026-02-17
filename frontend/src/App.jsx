@@ -4,6 +4,7 @@ import { SellerLayout } from './layouts/SellerLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 
 import { Home } from './pages/buyer/Home';
+import { ProductDetails } from './pages/buyer/ProductDetails';
 import { Cart } from './pages/buyer/Cart';
 
 import { Dashboard as SellerDashboard } from './pages/seller/Dashboard';
@@ -11,7 +12,12 @@ import { SellerProducts } from './pages/seller/Products';
 import { SellerOrders } from './pages/seller/Orders';
 
 import { AdminDashboard } from './pages/admin/Dashboard';
+import { AdminUsers } from './pages/admin/Users';
+import { AdminSellers } from './pages/admin/Sellers';
+import { AdminSettings } from './pages/admin/Settings';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/Login';
+import { AdminLogin } from './pages/AdminLogin';
 
 import { useEffect } from 'react';
 import { useAuthStore } from './store/useAuthStore';
@@ -32,23 +38,36 @@ function App() {
         {/* Buyer Routes */}
         <Route path="/" element={<BuyerLayout />}>
           <Route index element={<Home />} />
+          <Route path="product/:id" element={<ProductDetails />} />
           <Route path="cart" element={<Cart />} />
           <Route path="checkout" element={<Checkout />} />
           <Route path="orders" element={<OrderHistory />} />
         </Route>
 
         <Route path="/login" element={<Login />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
 
         {/* Seller Routes */}
-        <Route path="/seller" element={<SellerLayout />}>
+        <Route path="/seller" element={
+          <ProtectedRoute allowedRoles={['seller']}>
+            <SellerLayout />
+          </ProtectedRoute>
+        }>
           <Route index element={<SellerDashboard />} />
           <Route path="products" element={<SellerProducts />} />
           <Route path="orders" element={<SellerOrders />} />
         </Route>
 
         {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
           <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="sellers" element={<AdminSellers />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Route>
 
         {/* Fallback */}

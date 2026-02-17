@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Plus, Minus } from 'lucide-react';
 import { useCartStore } from '../store/useCartStore';
 import { PLACEHOLDER_IMAGE } from '../data/mockData';
@@ -30,8 +31,9 @@ export const ProductCard = ({ product }) => {
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col h-full group">
+
       {/* Image Section */}
-      <div className="relative h-40 w-full p-4 flex items-center justify-center bg-gray-50">
+      <Link to={`/product/${product.id}`} className="relative h-40 w-full p-4 flex items-center justify-center bg-gray-50 cursor-pointer">
         <img
           src={displayImage}
           alt={product.name}
@@ -43,14 +45,16 @@ export const ProductCard = ({ product }) => {
             {product.discount}% OFF
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Content Section */}
       <div className="p-3 flex flex-col flex-1">
         <div className="text-[10px] text-gray-500 mb-1 truncate">{product.category}</div>
-        <h3 className="text-sm font-medium text-gray-900 line-clamp-2 leading-tight mb-auto" title={product.name}>
-          {product.name}
-        </h3>
+        <Link to={`/product/${product.id}`}>
+          <h3 className="text-sm font-medium text-gray-900 line-clamp-2 leading-tight mb-auto hover:text-primary transition-colors" title={product.name}>
+            {product.name}
+          </h3>
+        </Link>
 
         <div className="text-[10px] text-gray-500 mt-2">{product.description}</div>
 

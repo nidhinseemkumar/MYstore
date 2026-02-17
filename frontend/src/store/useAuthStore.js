@@ -12,7 +12,7 @@ export const useAuthStore = create((set, get) => ({
     // Check current session
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
-      await get().fetchProfile(session.user.id);
+      await get().fetchProfile(session.user.id, session.user);
     } else {
       set({ isLoading: false });
     }
@@ -22,7 +22,7 @@ export const useAuthStore = create((set, get) => ({
       if (session?.user) {
         // If we don't have the user profile yet, fetch it
         if (!get().user) {
-          await get().fetchProfile(session.user.id);
+          await get().fetchProfile(session.user.id, session.user);
         }
       } else {
         set({ user: null, isAuthenticated: false, role: 'buyer', isLoading: false });
@@ -30,7 +30,7 @@ export const useAuthStore = create((set, get) => ({
     });
   },
 
-  fetchProfile: async (userId) => {
+  fetchProfile: async (userId, sessionUser = null) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -38,20 +38,53 @@ export const useAuthStore = create((set, get) => ({
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
-
-      if (data) {
-        set({
-          user: { id: userId, ...data },
-          role: data.role || 'buyer',
-          isAuthenticated: true,
-          isLoading: false
-        });
+      if (error && error.code !== 'PGRST116') {
+        throw error;
       }
+
+      // Determine role hierarchy:
+      // 1. Hardcoded Admin Email (Rescue)
+      // 2. Database Profile Role
+      // 3. Auth Metadata Role
+      // 4. Default 'buyer'
+      let finalRole = 'buyer';
+
+      if (sessionUser?.email === 'admin@mystore.com') {
+        finalRole = 'admin';
+      } else if (data?.role) {
+        finalRole = data.role;
+      } else if (sessionUser?.user_metadata?.role) {
+        finalRole = sessionUser.user_metadata.role;
+      }
+
+      const userObject = {
+        id: userId,
+        ...(data || {}),
+        email: sessionUser?.email || data?.email,
+        role: finalRole
+      };
+
+      set({
+        user: userObject,
+        role: finalRole,
+        isAuthenticated: true,
+        isLoading: false
+      });
+
     } catch (error) {
       console.error("Error fetching profile:", error);
-      // Fallback if profile doesn't exist yet but user is logged in
-      set({ isAuthenticated: true, isLoading: false });
+      // Fallback
+      let finalRole = sessionUser?.user_metadata?.role || 'buyer';
+      if (sessionUser?.email === 'admin@mystore.com') {
+        finalRole = 'admin';
+      }
+
+      set({
+        user: sessionUser ? { ...sessionUser, role: finalRole } : { id: userId, role: finalRole },
+        role: finalRole,
+        isAuthenticated: true,
+        isLoading: false
+      });
     }
   },
 

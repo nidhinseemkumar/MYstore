@@ -232,6 +232,16 @@ export const Navbar = () => {
                             </div>
                         )}
 
+                        {/* Fallback for authenticated users with unknown/missing role */}
+                        {isAuthenticated && !['admin', 'seller', 'buyer'].includes(user?.role) && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-red-500 font-bold px-2">Role: {user?.role || 'None'}</span>
+                                <button onClick={() => setShowLogoutConfirm(true)} className="text-gray-500 hover:text-red-500 p-2" title="Logout">
+                                    <LogIn size={20} className="rotate-180" />
+                                </button>
+                            </div>
+                        )}
+
                         {itemCount === 0 ? (
                             <button
                                 onClick={() => navigate('/cart')}

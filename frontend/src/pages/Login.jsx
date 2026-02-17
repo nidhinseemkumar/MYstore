@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Store, User, ShieldCheck, ArrowRight, Lock, Mail } from 'lucide-react';
+import { Store, User, ShieldCheck, ArrowRight, Lock, Mail, ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 
 export const Login = () => {
@@ -49,7 +49,11 @@ export const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative">
+            <Link to="/" className="absolute top-6 left-6 text-gray-500 hover:text-primary flex items-center gap-2 transition-colors font-medium">
+                <ArrowLeft size={20} />
+                <span className="hidden sm:inline">Back to Home</span>
+            </Link>
             <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
                 <div className="p-8">
                     <div className="text-center mb-8">
