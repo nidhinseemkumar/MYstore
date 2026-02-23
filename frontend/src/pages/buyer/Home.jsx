@@ -6,8 +6,10 @@ import { useProductStore } from '../../store/useProductStore';
 import { AllCategoriesModal } from '../../components/AllCategoriesModal';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 
 export const Home = () => {
+    const navigate = useNavigate();
     const { products, fetchProducts, isLoading } = useProductStore();
     const [showAllCategories, setShowAllCategories] = useState(false);
     const [showAllProducts, setShowAllProducts] = useState(false);
@@ -81,6 +83,7 @@ export const Home = () => {
                         <motion.div
                             key={cat.id}
                             whileHover={{ y: -5 }}
+                            onClick={() => navigate(`/category/${encodeURIComponent(cat.name)}`)}
                             className={`h-36 ${cat.color} rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center p-2 cursor-pointer transition-colors hover:shadow-md`}
                         >
                             <img src={cat.image} alt={cat.name} className="w-16 h-16 object-contain mb-3 drop-shadow-sm" />

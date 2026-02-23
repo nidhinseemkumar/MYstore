@@ -49,10 +49,7 @@ const SearchBar = ({ className, placeholder }) => {
     const handleSelectProduct = (productId) => {
         setSearchTerm('');
         setShowSuggestions(false);
-        // For now, since we don't have a product detail page, we just log it
-        // Or we could navigate to a page if it existed: navigate(`/product/${productId}`);
-        console.log("Selected product:", productId);
-        // Maybe added to cart? No, that's too aggressive.
+        navigate(`/product/${productId}`);
     };
 
     const clearSearch = () => {

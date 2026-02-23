@@ -22,7 +22,11 @@ export const Login = () => {
         try {
             if (isLoginMode) {
                 const { user } = await login(email, password);
-                const userRole = user?.user_metadata?.role || 'buyer';
+                let userRole = user?.user_metadata?.role || 'buyer';
+
+                if (user?.email === 'admin@mystore.com') {
+                    userRole = 'admin';
+                }
 
                 if (userRole === 'seller') navigate('/seller');
                 else if (userRole === 'admin') navigate('/admin');
@@ -31,7 +35,11 @@ export const Login = () => {
                 const { session } = await signup(email, password, fullName, role);
                 if (session) {
                     // Auto-logged in (Email confirmation disabled or not required)
-                    const userRole = session.user?.user_metadata?.role || 'buyer';
+                    let userRole = session.user?.user_metadata?.role || 'buyer';
+                    if (session.user?.email === 'admin@mystore.com') {
+                        userRole = 'admin';
+                    }
+
                     if (userRole === 'seller') navigate('/seller');
                     else if (userRole === 'admin') navigate('/admin');
                     else navigate('/');

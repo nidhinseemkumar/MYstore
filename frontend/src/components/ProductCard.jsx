@@ -56,12 +56,14 @@ export const ProductCard = ({ product }) => {
           </h3>
         </Link>
 
-        <div className="text-[10px] text-gray-500 mt-2">{product.description}</div>
+        <div className="text-[10px] text-gray-500 mt-2 line-clamp-2">{product.description}</div>
 
         {/* Price & Action */}
-        <div className="mt-3 flex items-end justify-between">
+        <div className="mt-auto pt-3 flex items-end justify-between">
           <div className="flex flex-col">
-            <span className="text-[10px] text-gray-400 line-through">₹{product.originalPrice}</span>
+            {product.originalPrice > product.price && (
+              <span className="text-[10px] text-gray-400 line-through">₹{product.originalPrice}</span>
+            )}
             <span className="text-sm font-bold text-gray-900">₹{product.price}</span>
           </div>
 
