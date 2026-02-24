@@ -86,10 +86,10 @@ export const OrderHistory = () => {
                                 </div>
                                 <div className="text-right">
                                     <p className="text-sm font-bold text-gray-900">₹{order.total_amount}</p>
-                                    <span className={`inline - block px - 2 py - 0.5 rounded text - [10px] uppercase font - bold tracking - wider ${order.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                            order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                                                'bg-blue-100 text-blue-700'
-                                        } `}>
+                                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                        order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                            'bg-blue-100 text-blue-700'
+                                        }`}>
                                         {order.status}
                                     </span>
                                 </div>

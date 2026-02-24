@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Star, ShoppingCart, ArrowLeft, Plus, Minus, Share2, Heart } from 'lucide-react';
 import { useProductStore } from '../../store/useProductStore';
 import { useCartStore } from '../../store/useCartStore';
+import { ProductReviews } from '../../components/ProductReviews';
 import { PLACEHOLDER_IMAGE } from '../../data/mockData';
 
 export const ProductDetails = () => {
@@ -185,6 +186,10 @@ export const ProductDetails = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Reviews Section */}
+                <ProductReviews productId={selectedProduct.id} />
+
             </div>
         </div>
     );

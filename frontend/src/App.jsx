@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { BuyerLayout } from './layouts/BuyerLayout';
 import { SellerLayout } from './layouts/SellerLayout';
 import { AdminLayout } from './layouts/AdminLayout';
@@ -16,6 +17,7 @@ import { AdminDashboard } from './pages/admin/Dashboard';
 import { AdminUsers } from './pages/admin/Users';
 import { AdminSellers } from './pages/admin/Sellers';
 import { AdminSettings } from './pages/admin/Settings';
+import { AdminCategories } from './pages/admin/Categories';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/Login';
 
@@ -34,6 +36,7 @@ function App() {
 
   return (
     <Router>
+      <Toaster position="top-center" />
       <Routes>
         {/* Buyer Routes */}
         <Route path="/" element={<BuyerLayout />}>
@@ -67,6 +70,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="sellers" element={<AdminSellers />} />
+          <Route path="categories" element={<AdminCategories />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
 

@@ -1,23 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight } from 'lucide-react';
-import { CATEGORIES } from '../data/mockData';
+import { useCategoryStore } from '../store/useCategoryStore';
 import { useNavigate } from 'react-router-dom';
 
 export const AllCategoriesModal = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
-    // Expanded categories list (mock)
-    const ALL_CATEGORIES = [
-        ...CATEGORIES,
-        { id: '7', name: 'Bakery & Biscuits', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081927.png', color: 'bg-amber-50' },
-        { id: '8', name: 'Chicken, Meat & Fish', image: 'https://cdn-icons-png.flaticon.com/512/1134/1134447.png', color: 'bg-red-50' },
-        { id: '9', name: 'Baby Care', image: 'https://cdn-icons-png.flaticon.com/512/3050/3050160.png', color: 'bg-pink-50' },
-        { id: '10', name: 'Cleaning Essentials', image: 'https://cdn-icons-png.flaticon.com/512/2622/2622112.png', color: 'bg-blue-50' },
-        { id: '11', name: 'Home & Office', image: 'https://cdn-icons-png.flaticon.com/512/2405/2405553.png', color: 'bg-gray-50' },
-        { id: '12', name: 'Personal Care', image: 'https://cdn-icons-png.flaticon.com/512/2909/2909787.png', color: 'bg-purple-50' },
-        { id: '13', name: 'Pet Care', image: 'https://cdn-icons-png.flaticon.com/512/3049/3049962.png', color: 'bg-yellow-50' },
-        { id: '14', name: 'Sweet Tooth', image: 'https://cdn-icons-png.flaticon.com/512/2553/2553653.png', color: 'bg-rose-50' },
-    ];
+    const { categories } = useCategoryStore();
 
     return (
         <AnimatePresence>
@@ -58,7 +47,7 @@ export const AllCategoriesModal = ({ isOpen, onClose }) => {
                         {/* Grid Content */}
                         <div className="p-6 sm:p-8 overflow-y-auto">
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                                {ALL_CATEGORIES.map((cat) => (
+                                {categories.map((cat) => (
                                     <motion.div
                                         whileHover={{ scale: 1.03, y: -2 }}
                                         whileTap={{ scale: 0.98 }}
@@ -69,8 +58,8 @@ export const AllCategoriesModal = ({ isOpen, onClose }) => {
                                         }}
                                         className={`group flex flex-col items-center justify-center p-6 rounded-2xl sm:rounded-3xl border border-transparent hover:border-black/5 cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 ${cat.color}`}
                                     >
-                                        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/60 rounded-full flex items-center justify-center mb-4 shadow-inner group-hover:scale-110 transition-transform duration-300">
-                                            <img src={cat.image} alt={cat.name} className="w-12 h-12 sm:w-14 sm:h-14 object-contain drop-shadow-md" />
+                                        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/60 rounded-full flex items-center justify-center mb-4 shadow-inner group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                                            <img src={cat.image_url || cat.image} alt={cat.name} className="w-12 h-12 sm:w-14 sm:h-14 object-contain drop-shadow-md mix-blend-multiply" />
                                         </div>
                                         <span className="text-sm sm:text-base font-bold text-gray-800 text-center leading-tight">{cat.name}</span>
                                     </motion.div>

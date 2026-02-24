@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Image, Loader } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/useAuthStore';
-import { CATEGORIES } from '../data/mockData';
+import { useCategoryStore } from '../store/useCategoryStore';
 
 export const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
     const { user } = useAuthStore();
+    const { categories, fetchCategories } = useCategoryStore();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -15,6 +16,12 @@ export const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
         stock_quantity: 100,
         image_url: '' // Using URL for simplicity for now, file upload is complex
     });
+
+    useEffect(() => {
+        if (isOpen && categories.length === 0) {
+            fetchCategories();
+        }
+    }, [isOpen, categories.length, fetchCategories]);
 
     if (!isOpen) return null;
 
@@ -97,8 +104,8 @@ export const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
                             value={formData.category}
                             onChange={e => setFormData({ ...formData, category: e.target.value })}
                         >
-                            {CATEGORIES.map(c => (
-                                <option key={c.name} value={c.name}>{c.name}</option>
+                            {categories.map(c => (
+                                <option key={c.id || c.name} value={c.name}>{c.name}</option>
                             ))}
                         </select>
                     </div>

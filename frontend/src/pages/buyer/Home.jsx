@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CATEGORIES } from '../../data/mockData'; // Keep categories mock for now
 import { ProductCard } from '../../components/ProductCard';
 import { useProductStore } from '../../store/useProductStore';
+import { useCategoryStore } from '../../store/useCategoryStore';
 import { AllCategoriesModal } from '../../components/AllCategoriesModal';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -11,14 +11,17 @@ import { useNavigate } from 'react-router-dom';
 export const Home = () => {
     const navigate = useNavigate();
     const { products, fetchProducts, isLoading } = useProductStore();
+    const { categories, fetchCategories, isLoading: categoriesLoading } = useCategoryStore();
     const [showAllCategories, setShowAllCategories] = useState(false);
     const [showAllProducts, setShowAllProducts] = useState(false);
 
     useEffect(() => {
         fetchProducts();
-    }, [fetchProducts]);
+        fetchCategories();
+    }, [fetchProducts, fetchCategories]);
 
     const displayedProducts = showAllProducts ? products : products.slice(0, 12);
+    const displayCategories = categories.slice(0, 6);
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20 relative">
@@ -79,17 +82,27 @@ export const Home = () => {
                     </button>
                 </div>
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
-                    {CATEGORIES.map((cat) => (
-                        <motion.div
-                            key={cat.id}
-                            whileHover={{ y: -5 }}
-                            onClick={() => navigate(`/category/${encodeURIComponent(cat.name)}`)}
-                            className={`h-36 ${cat.color} rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center p-2 cursor-pointer transition-colors hover:shadow-md`}
-                        >
-                            <img src={cat.image} alt={cat.name} className="w-16 h-16 object-contain mb-3 drop-shadow-sm" />
-                            <span className="text-xs font-bold text-gray-700 text-center leading-tight">{cat.name}</span>
-                        </motion.div>
-                    ))}
+                    {categoriesLoading ? (
+                        <div className="col-span-3 md:col-span-6 flex justify-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        </div>
+                    ) : displayCategories.length === 0 ? (
+                        <div className="col-span-3 md:col-span-6 text-center text-gray-500 py-8 text-sm">
+                            No categories found
+                        </div>
+                    ) : (
+                        displayCategories.map((cat) => (
+                            <motion.div
+                                key={cat.id || cat.name}
+                                whileHover={{ y: -5 }}
+                                onClick={() => navigate(`/category/${encodeURIComponent(cat.name)}`)}
+                                className={`h-36 ${cat.color || 'bg-gray-50'} rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center p-2 cursor-pointer transition-colors hover:shadow-md`}
+                            >
+                                <img src={cat.image_url || cat.image} alt={cat.name} className="w-16 h-16 object-contain mb-3 drop-shadow-sm mix-blend-multiply" />
+                                <span className="text-xs font-bold text-gray-700 text-center leading-tight">{cat.name}</span>
+                            </motion.div>
+                        ))
+                    )}
                 </div>
             </section>
 

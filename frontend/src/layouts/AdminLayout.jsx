@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Store, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Store, Settings, LogOut, Tags } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 
 export const AdminLayout = () => {
@@ -11,6 +11,7 @@ export const AdminLayout = () => {
         { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/admin' },
         { icon: <Users size={20} />, label: 'Users', path: '/admin/users' },
         { icon: <Store size={20} />, label: 'Sellers', path: '/admin/sellers' },
+        { icon: <Tags size={20} />, label: 'Categories', path: '/admin/categories' },
         { icon: <Settings size={20} />, label: 'Settings', path: '/admin/settings' },
     ];
 

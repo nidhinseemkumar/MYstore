@@ -1,10 +1,11 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Minus, Plus, Trash2, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../store/useCartStore';
 
 export const Cart = () => {
+  const navigate = useNavigate();
   const { items, updateQuantity, removeItem, total, itemCount, addItem } = useCartStore();
 
   if (items.length === 0) {
