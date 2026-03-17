@@ -1,13 +1,11 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
-import { CATEGORIES as mockCategories } from '../data/mockData';
 
 export const useCategoryStore = create((set, get) => ({
     categories: [],
     isLoading: false,
     error: null,
 
-    // Fallback to mock data if it fails, useful for development
     fetchCategories: async () => {
         set({ isLoading: true, error: null });
         try {
@@ -17,13 +15,22 @@ export const useCategoryStore = create((set, get) => ({
                 .order('name');
 
             if (error) throw error;
+            
+            // Temporary patch since live DB update is blocked by RLS
+            const patchedData = data?.map(category => {
+                if (category.name === 'Instant Food') {
+                    return { ...category, image_url: 'https://cdn-icons-png.flaticon.com/512/3448/3448066.png' };
+                }
+                if (category.name === 'Tea, Coffee & Health Drinks') {
+                    return { ...category, image_url: 'https://cdn-icons-png.flaticon.com/512/924/924514.png' };
+                }
+                return category;
+            });
 
-            // If empty, it might mean the table hasn't been created yet or is empty. Let's still use it if it succeeds.
-            set({ categories: data, isLoading: false });
+            set({ categories: patchedData || [], isLoading: false });
         } catch (error) {
-            console.error("Error fetching categories, falling back to mock:", error);
-            // Fallback gracefully
-            set({ categories: mockCategories, error: error.message, isLoading: false });
+            console.error("Error fetching categories:", error);
+            set({ error: error.message, isLoading: false });
         }
     },
 }));

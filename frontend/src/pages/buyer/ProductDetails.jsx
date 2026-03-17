@@ -25,22 +25,6 @@ export const ProductDetails = () => {
     useEffect(() => {
         if (selectedProduct) {
             setDisplayImage(selectedProduct.image_url || selectedProduct.image || PLACEHOLDER_IMAGE);
-
-            // Fetch from OpenFoodFacts if barcode exists
-            if (selectedProduct.barcode) {
-                const fetchImage = async () => {
-                    try {
-                        const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${selectedProduct.barcode}.json`);
-                        const data = await response.json();
-                        if (data.status === 1 && data.product.image_front_url) {
-                            setDisplayImage(data.product.image_front_url);
-                        }
-                    } catch (err) {
-                        console.error("Error fetching image:", err);
-                    }
-                };
-                fetchImage();
-            }
         }
     }, [selectedProduct]);
 

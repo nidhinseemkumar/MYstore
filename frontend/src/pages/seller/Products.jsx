@@ -22,7 +22,17 @@ export const SellerProducts = () => {
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            setProducts(data);
+            
+            const mockProductNames = [
+                'Amul Taaza Fresh Toned Milk',
+                "Lay's India's Magic Masala Chips",
+                'Coca-Cola Soft Drink - Original Taste',
+                'Onion (Loose)',
+                'Fortune Sunlite Refined Sunflower Oil',
+                'Tata Salt Vacuum Evaporated Iodised Salt'
+            ];
+            
+            setProducts(data.filter(p => !mockProductNames.includes(p.name)));
         } catch (err) {
             console.error(err);
         } finally {

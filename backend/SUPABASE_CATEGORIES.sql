@@ -25,5 +25,5 @@ insert into public.categories (name, image_url, color) values
 ('Dairy & Breakfast', 'https://cdn-icons-png.flaticon.com/512/3050/3050158.png', 'bg-blue-50'),
 ('Munchies', 'https://cdn-icons-png.flaticon.com/512/2553/2553691.png', 'bg-orange-50'),
 ('Cold Drinks', 'https://cdn-icons-png.flaticon.com/512/2405/2405479.png', 'bg-red-50'),
-('Instant Food', 'https://cdn-icons-png.flaticon.com/512/2515/2515127.png', 'bg-yellow-50'),
-('Tea, Coffee & Health Drinks', 'https://cdn-icons-png.flaticon.com/512/3050/3050239.png', 'bg-amber-50');
+('Instant Food', 'https://cdn-icons-png.flaticon.com/512/3448/3448066.png', 'bg-yellow-50'),
+('Tea, Coffee & Health Drinks', 'https://cdn-icons-png.flaticon.com/512/924/924514.png', 'bg-amber-50');

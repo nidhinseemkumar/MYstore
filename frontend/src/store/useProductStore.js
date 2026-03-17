@@ -16,7 +16,19 @@ export const useProductStore = create((set, get) => ({
 
             if (error) throw error;
 
-            set({ products: data, isLoading: false });
+            // Filter out dummy data that was seeded (frequently referred to as "api data" by users)
+            const mockProductNames = [
+                'Amul Taaza Fresh Toned Milk',
+                "Lay's India's Magic Masala Chips",
+                'Coca-Cola Soft Drink - Original Taste',
+                'Onion (Loose)',
+                'Fortune Sunlite Refined Sunflower Oil',
+                'Tata Salt Vacuum Evaporated Iodised Salt'
+            ];
+
+            const realSellerProducts = data.filter(p => !mockProductNames.includes(p.name));
+
+            set({ products: realSellerProducts, isLoading: false });
         } catch (error) {
             console.error('Error fetching products:', error);
             set({ error: error.message, isLoading: false });
@@ -43,6 +55,20 @@ export const useProductStore = create((set, get) => ({
                 .single();
 
             if (error) throw error;
+            
+            const mockProductNames = [
+                'Amul Taaza Fresh Toned Milk',
+                "Lay's India's Magic Masala Chips",
+                'Coca-Cola Soft Drink - Original Taste',
+                'Onion (Loose)',
+                'Fortune Sunlite Refined Sunflower Oil',
+                'Tata Salt Vacuum Evaporated Iodised Salt'
+            ];
+
+            if (data && mockProductNames.includes(data.name)) {
+                set({ error: "Product not found.", isLoading: false });
+                return;
+            }
 
             set({ selectedProduct: data, isLoading: false });
         } catch (error) {

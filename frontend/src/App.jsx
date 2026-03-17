@@ -12,6 +12,7 @@ import { Category } from './pages/buyer/Category';
 import { Dashboard as SellerDashboard } from './pages/seller/Dashboard';
 import { SellerProducts } from './pages/seller/Products';
 import { SellerOrders } from './pages/seller/Orders';
+import { SellerSettings } from './pages/seller/Settings';
 
 import { AdminDashboard } from './pages/admin/Dashboard';
 import { AdminUsers } from './pages/admin/Users';
@@ -59,6 +60,7 @@ function App() {
           <Route index element={<SellerDashboard />} />
           <Route path="products" element={<SellerProducts />} />
           <Route path="orders" element={<SellerOrders />} />
+          <Route path="settings" element={<SellerSettings />} />
         </Route>
 
         {/* Admin Routes */}

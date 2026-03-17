@@ -11,24 +11,6 @@ export const ProductCard = ({ product }) => {
 
   const [displayImage, setDisplayImage] = useState(product.image_url || product.image || PLACEHOLDER_IMAGE);
 
-  useEffect(() => {
-    if (product.barcode) {
-      const fetchImage = async () => {
-        try {
-          const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${product.barcode}.json`);
-          const data = await response.json();
-          if (data.status === 1 && data.product.image_front_url) {
-            setDisplayImage(data.product.image_front_url);
-          }
-        } catch (error) {
-          console.error("Error fetching image from OpenFoodFacts:", error);
-        }
-      };
-
-      fetchImage();
-    }
-  }, [product.barcode, product.image]);
-
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col h-full group">
 

@@ -76,19 +76,24 @@ export const Login = () => {
                     </div>
 
                     {!isLoginMode && (
-                        <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
+                        <div className="relative flex bg-gray-100 p-1 rounded-xl mb-6">
+                            {/* Sliding Indicator */}
+                            <div
+                                className={`absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-transform duration-300 ease-in-out ${
+                                    role === 'buyer' ? 'translate-x-0' : 'translate-x-full'
+                                }`}
+                            />
                             {['buyer', 'seller'].map((r) => (
                                 <button
                                     key={r}
                                     type="button"
                                     onClick={() => setRole(r)}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all ${role === r
-                                        ? 'bg-white text-gray-900 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                        }`}
+                                    className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-colors duration-300 ${
+                                        role === r ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                                    }`}
                                 >
-                                    {r === 'buyer' && <User size={16} />}
-                                    {r === 'seller' && <Store size={16} />}
+                                    {r === 'buyer' && <User size={16} className={`transition-transform duration-300 ${role === r ? 'scale-110 text-primary' : ''}`} />}
+                                    {r === 'seller' && <Store size={16} className={`transition-transform duration-300 ${role === r ? 'scale-110 text-primary' : ''}`} />}
                                     <span className="capitalize">{r}</span>
                                 </button>
                             ))}

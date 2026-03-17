@@ -5,8 +5,8 @@ export const CATEGORIES = [
   { id: '2', name: 'Dairy & Breakfast', image: 'https://cdn-icons-png.flaticon.com/512/3050/3050158.png', color: 'bg-blue-50' },
   { id: '3', name: 'Munchies', image: 'https://cdn-icons-png.flaticon.com/512/2553/2553691.png', color: 'bg-orange-50' },
   { id: '4', name: 'Cold Drinks', image: 'https://cdn-icons-png.flaticon.com/512/2405/2405479.png', color: 'bg-red-50' },
-  { id: '5', name: 'Instant Food', image: 'https://cdn-icons-png.flaticon.com/512/2515/2515127.png', color: 'bg-yellow-50' },
-  { id: '6', name: 'Tea, Coffee & Health Drinks', image: 'https://cdn-icons-png.flaticon.com/512/3050/3050239.png', color: 'bg-amber-50' },
+  { id: '5', name: 'Instant Food', image: 'https://cdn-icons-png.flaticon.com/512/3448/3448066.png', color: 'bg-yellow-50' },
+  { id: '6', name: 'Tea, Coffee & Health Drinks', image: 'https://cdn-icons-png.flaticon.com/512/924/924514.png', color: 'bg-amber-50' },
 ];
 
 export const POPULAR_PRODUCTS = [
