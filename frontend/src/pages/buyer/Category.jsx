@@ -13,6 +13,7 @@ export const Category = () => {
     const { products, fetchProducts, isLoading } = useProductStore();
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         // Fetch all products if not already loaded (simple approach)
         fetchProducts();
     }, [fetchProducts]);

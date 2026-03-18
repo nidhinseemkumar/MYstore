@@ -1,12 +1,38 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import { ShoppingCart, Search, User, MapPin, LogIn, Package, X } from 'lucide-react';
+import { ShoppingCart, Search, User, MapPin, LogIn, Package, X, LocateFixed } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useCartStore } from '../store/useCartStore';
 import { useLocationStore } from '../store/useLocationStore';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { AnimatePresence, motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const MapUpdater = ({ center }) => {
+    const map = useMap();
+    useEffect(() => {
+        if (center && center.lat && center.lng) {
+            map.flyTo([center.lat, center.lng], map.getZoom() || 16, { animate: true });
+        }
+    }, [center, map]);
+    return null;
+};
+
+const MapEvents = ({ onMoveEnd }) => {
+    const map = useMap();
+    useEffect(() => {
+        const handleMoveEnd = () => {
+            const center = map.getCenter();
+            onMoveEnd(center.lat, center.lng);
+        };
+        map.on('moveend', handleMoveEnd);
+        return () => map.off('moveend', handleMoveEnd);
+    }, [map, onMoveEnd]);
+    return null;
+};
 
 const SearchBar = ({ className, placeholder }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -34,10 +60,19 @@ const SearchBar = ({ className, placeholder }) => {
                 .from('products')
                 .select('id, name, image_url, price, category')
                 .ilike('name', `%${term}%`)
-                .limit(5);
+                .limit(10);
 
             if (data) {
-                setSuggestions(data);
+                const mockProductNames = [
+                    'Amul Taaza Fresh Toned Milk',
+                    "Lay's India's Magic Masala Chips",
+                    'Coca-Cola Soft Drink - Original Taste',
+                    'Onion (Loose)',
+                    'Fortune Sunlite Refined Sunflower Oil',
+                    'Tata Salt Vacuum Evaporated Iodised Salt'
+                ];
+                const realSellerProducts = data.filter(p => !mockProductNames.includes(p.name)).slice(0, 5);
+                setSuggestions(realSellerProducts);
                 setShowSuggestions(true);
             }
         } else {
@@ -120,18 +155,133 @@ export const Navbar = () => {
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [showLocationModal, setShowLocationModal] = useState(false);
 
-    // Local state for editing in modal
-    const [editForm, setEditForm] = useState({ address: '', city: '' });
+    const [editForm, setEditForm] = useState({ 
+        address: '', 
+        city: '', 
+        pincode: '', 
+        landmark: '', 
+        type: 'Home', 
+        phone: '',
+        lat: 12.9716,
+        lng: 77.5946
+    });
+    const [isLocating, setIsLocating] = useState(false);
+    const [mapCenter, setMapCenter] = useState({ lat: 12.9716, lng: 77.5946 });
+    const reverseGeocodeRef = useRef(null);
 
     useEffect(() => {
         if (showLocationModal) {
-            setEditForm({ address: location.address, city: location.city });
+            setEditForm({ 
+                address: location.address || '', 
+                city: location.city || '',
+                pincode: location.pincode || '',
+                landmark: location.landmark || '',
+                type: location.type || 'Home',
+                phone: location.phone || '',
+                lat: location.lat || 12.9716,
+                lng: location.lng || 77.5946,
+            });
+            setMapCenter({
+                lat: location.lat || 12.9716,
+                lng: location.lng || 77.5946
+            });
         }
     }, [showLocationModal, location]);
 
     const handleSaveLocation = () => {
+        if (!editForm.address?.trim()) {
+            toast.error('Detailed Address is required');
+            return;
+        }
+        if (!editForm.city?.trim()) {
+            toast.error('City is required');
+            return;
+        }
+        if (!editForm.pincode?.trim()) {
+            toast.error('Pincode is required');
+            return;
+        }
+        if (!editForm.phone?.trim()) {
+            toast.error('Contact Number is required');
+            return;
+        }
+
         setLocation(editForm);
         setShowLocationModal(false);
+        toast.success('Location updated successfully!');
+    };
+
+    const handleMapMoveEnd = (lat, lng) => {
+        setEditForm(prev => ({ ...prev, lat, lng }));
+
+        if (reverseGeocodeRef.current) clearTimeout(reverseGeocodeRef.current);
+        reverseGeocodeRef.current = setTimeout(async () => {
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                
+                const city = data.address?.city || data.address?.town || data.address?.county || data.address?.state_district || '';
+                const area = data.address?.suburb || data.address?.neighbourhood || data.address?.village || city;
+                const pincode = data.address?.postcode || '';
+                
+                setEditForm(prev => ({
+                    ...prev,
+                    address: (data.address?.road ? data.address.road + ', ' : '') + area,
+                    city: city,
+                    pincode: pincode
+                }));
+            } catch (error) {
+                // Ignore API rate limits or network issues quietly while dragging
+            }
+        }, 1500); 
+    };
+
+    const handleDetectLocation = () => {
+        if (!navigator.geolocation) {
+            toast.error('Geolocation is not supported by your browser');
+            return;
+        }
+
+        setIsLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                try {
+                    const { latitude, longitude } = position.coords;
+                    // Reverse geocoding using Nominatim (OpenStreetMap)
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                    if (!res.ok) throw new Error('Failed to fetch address');
+                    const data = await res.json();
+                    
+                    const city = data.address.city || data.address.town || data.address.county || data.address.state_district || 'Unknown City';
+                    const area = data.address.suburb || data.address.neighbourhood || data.address.village || city;
+                    const pincode = data.address.postcode || '';
+                    
+                    setEditForm(prev => ({
+                        ...prev,
+                        lat: latitude,
+                        lng: longitude,
+                        address: (data.address.road ? data.address.road + ', ' : '') + area,
+                        city: city,
+                        pincode: pincode
+                    }));
+                    setMapCenter({
+                        lat: latitude,
+                        lng: longitude
+                    });
+                    toast.success('Location detected!');
+                } catch (error) {
+                    toast.error('Could not determine exact address from location');
+                } finally {
+                    setIsLocating(false);
+                }
+            },
+            (error) => {
+                setIsLocating(false);
+                toast.error('Please allow location permissions to use this feature');
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
     };
 
     const handleLogout = () => {
@@ -179,7 +329,7 @@ export const Navbar = () => {
                                 onClick={() => setShowLocationModal(true)}
                                 className="flex items-center gap-1 text-[10px] text-gray-500 leading-tight cursor-pointer hover:text-primary transition-colors"
                             >
-                                <span className="truncate max-w-[100px]">{location.address || 'Home'}</span> - <span className="truncate max-w-[80px]">{location.city || 'Bangalore'}</span> <MapPin size={10} />
+                                <span className="truncate max-w-[80px] font-bold text-gray-800">{location.type || 'Home'}</span> - <span className="truncate max-w-[100px]">{location.address || location.city || 'Select Address'}</span> <MapPin size={10} className="shrink-0" />
                             </div>
                         </div>
                     </div>
@@ -217,9 +367,12 @@ export const Navbar = () => {
                             )
                         )}
 
-                        {/* Show Orders link for logged in buyers */}
+                        {/* Show links for logged in buyers */}
                         {isAuthenticated && user?.role === 'buyer' && (
                             <div className="flex items-center gap-2">
+                                <Link to="/account" className="text-gray-500 hover:text-primary p-2" title="My Account">
+                                    <User size={20} />
+                                </Link>
                                 <Link to="/orders" className="text-gray-500 hover:text-primary p-2" title="My Orders">
                                     <Package size={20} />
                                 </Link>
@@ -330,35 +483,138 @@ export const Navbar = () => {
                                 animate={{ scale: 1, opacity: 1, y: 0 }}
                                 exit={{ scale: 0.95, opacity: 0, y: 10 }}
                                 transition={{ type: "spring", duration: 0.3 }}
-                                className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6"
+                                className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 overflow-hidden"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <h3 className="text-lg font-bold text-gray-900 mb-4">Edit Location</h3>
+                                <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+                                    <h3 className="text-lg font-bold text-gray-900">Edit Delivery Location</h3>
+                                    <button onClick={() => setShowLocationModal(false)} className="text-gray-400 hover:text-gray-600">
+                                        <X size={20} />
+                                    </button>
+                                </div>
 
-                                <div className="space-y-4">
+                                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+                                    {/* Map Area */}
+                                    <div className="relative w-full h-48 bg-gray-100 rounded-xl overflow-hidden shadow-inner mb-4">
+                                        <MapContainer 
+                                            center={[mapCenter.lat, mapCenter.lng]} 
+                                            zoom={16} 
+                                            scrollWheelZoom={true} 
+                                            zoomControl={false}
+                                            style={{ height: "100%", width: "100%", zIndex: 10 }}
+                                        >
+                                            <TileLayer
+                                                attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                            />
+                                            <MapUpdater center={mapCenter} />
+                                            <MapEvents onMoveEnd={handleMapMoveEnd} />
+                                        </MapContainer>
+                                        
+                                        {/* Center Fixed Marker */}
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[85%] z-[400] pointer-events-none drop-shadow-md">
+                                            <div className="relative flex flex-col items-center">
+                                                <div className="bg-gray-900 text-white p-2 rounded-full shadow-lg">
+                                                    <MapPin size={24} className="fill-current" />
+                                                </div>
+                                                <div className="w-1.5 h-1.5 bg-black/40 rounded-full mt-1 blur-[1px]"></div>
+                                            </div>
+                                        </div>
+
+                                        {/* Floating Detect Button */}
+                                        <button
+                                            onClick={handleDetectLocation}
+                                            disabled={isLocating}
+                                            className="absolute bottom-3 right-3 z-[400] bg-white text-primary p-2.5 rounded-full shadow-lg border border-gray-100 font-bold hover:bg-gray-50 flex items-center justify-center transition-colors disabled:opacity-50"
+                                            title="Use my current location"
+                                        >
+                                            {isLocating ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div> : <LocateFixed size={20} />}
+                                        </button>
+                                        <div className="absolute top-3 left-3 z-[400] bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow border border-gray-100 text-xs font-bold text-gray-700 pointer-events-none">
+                                            Drag map to adjust pin
+                                        </div>
+                                    </div>
+
+                                    {/* Type Selection */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Address Label / Area</label>
-                                        <input
-                                            type="text"
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Save address as</label>
+                                        <div className="flex gap-2">
+                                            {['Home', 'Office', 'Other'].map(type => (
+                                                <button
+                                                    key={type}
+                                                    onClick={() => setEditForm(prev => ({ ...prev, type }))}
+                                                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${editForm.type === type ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                                    disabled={isLocating}
+                                                >
+                                                    {type}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Detailed Address</label>
+                                        <textarea
+                                            rows="2"
                                             value={editForm.address}
                                             onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-                                            placeholder="e.g. Home, Office, Koramangala"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
+                                            placeholder="House No, Building Name, Street, Area"
+                                            disabled={isLocating}
                                         />
                                     </div>
+
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Nearest Landmark (Optional)</label>
                                         <input
                                             type="text"
-                                            value={editForm.city}
-                                            onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                                            value={editForm.landmark}
+                                            onChange={(e) => setEditForm({ ...editForm, landmark: e.target.value })}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-                                            placeholder="e.g. Bangalore"
+                                            placeholder="e.g. Opposite Metro Station"
+                                            disabled={isLocating}
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                            <input
+                                                type="text"
+                                                value={editForm.city}
+                                                onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                                                placeholder="e.g. Bangalore"
+                                                disabled={isLocating}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
+                                            <input
+                                                type="text"
+                                                value={editForm.pincode}
+                                                onChange={(e) => setEditForm({ ...editForm, pincode: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                                                placeholder="e.g. 560001"
+                                                disabled={isLocating}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                                        <input
+                                            type="tel"
+                                            value={editForm.phone}
+                                            onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                                            placeholder="10-digit mobile number"
+                                            disabled={isLocating}
                                         />
                                     </div>
                                 </div>
 
-                                <div className="flex gap-3 justify-end mt-6">
+                                <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-100">
                                     <button
                                         onClick={() => setShowLocationModal(false)}
                                         className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors text-sm"

@@ -17,6 +17,7 @@ export const ProductDetails = () => {
     const [displayImage, setDisplayImage] = useState(null);
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         if (id) {
             fetchProduct(id);
         }

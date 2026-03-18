@@ -27,6 +27,7 @@ import { useAuthStore } from './store/useAuthStore';
 
 import { Checkout } from './pages/buyer/Checkout';
 import { OrderHistory } from './pages/buyer/Orders';
+import { MyAccount } from './pages/buyer/MyAccount';
 
 function App() {
   const { initialize } = useAuthStore();
@@ -47,6 +48,7 @@ function App() {
           <Route path="category/:categoryName" element={<Category />} />
           <Route path="checkout" element={<Checkout />} />
           <Route path="orders" element={<OrderHistory />} />
+          <Route path="account" element={<MyAccount />} />
         </Route>
 
         <Route path="/login" element={<Login />} />

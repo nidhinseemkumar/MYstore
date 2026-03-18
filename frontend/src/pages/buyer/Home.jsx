@@ -16,6 +16,7 @@ export const Home = () => {
     const [showAllProducts, setShowAllProducts] = useState(false);
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         fetchProducts();
         fetchCategories();
     }, [fetchProducts, fetchCategories]);
